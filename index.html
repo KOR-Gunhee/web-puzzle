@@ -4,7 +4,7 @@
         <meta charset="UTF-8">
         <meta name="viewport"
             content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-        <title>커스텀 사진 퍼즐 게임 - v2</title>
+        <title>커스텀 사진 퍼즐 게임 - v8</title>
         <style>
         :root {
             --bg-color: #e5e7eb;
@@ -26,7 +26,6 @@
             overflow: hidden;
         }
 
-        /* 5차 패치: 컨트롤 패널과 정보바를 감싸는 헤더 영역 */
         #top-section {
             display: flex; flex-direction: column; width: 100%;
             background-color: var(--panel-bg);
@@ -34,7 +33,6 @@
             z-index: 100;
         }
 
-        /* 6차 패치: 첨부된 UI 스케치 기반 레이아웃 변경 */
         .top-layout {
             display: flex;
             gap: 10px;
@@ -44,7 +42,7 @@
         }
 
         .left-controls {
-            flex: 55; /* 좌측 55% 비율 */
+            flex: 55;
             display: flex;
             flex-direction: column;
             gap: 8px;
@@ -62,15 +60,15 @@
         }
 
         .right-preview {
-            flex: 45; /* 우측 45% 비율 */
+            flex: 45;
             border: 2px dashed #d1d5db;
             border-radius: 12px;
             background: #f9fafb;
             display: flex;
             align-items: center;
             justify-content: center;
-            position: relative;
             overflow: hidden;
+            padding: 4px; /* 8차 패치: 테두리 여백 추가 */
         }
 
         .preview-placeholder {
@@ -79,13 +77,13 @@
             font-size: 14px;
         }
 
+        /* 8차 패치: 원본 비율 유지 (contain) 및 절대위치 해제 */
         #preview-img { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: cover; 
-            position: absolute;
-            top: 0; left: 0;
+            max-width: 100%; 
+            max-height: 100%; 
+            object-fit: contain; 
             display: none;
+            border-radius: 8px;
         }
 
         #status-bar-wrapper {
@@ -95,7 +93,6 @@
             width: 100%;
         }
 
-        /* 4차 패치: 상태 바 (타이머 및 진행도) */
         #status-bar {
             background: rgba(79, 70, 229, 0.1);
             padding: 6px 16px;
@@ -106,7 +103,6 @@
             font-size: 14px;
         }
 
-        /* 아이들 맞춤형 크고 귀여운 3D 버튼 스타일 */
         button, .file-upload-btn {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             padding: 8px 4px; border: none; border-radius: 12px;
@@ -142,19 +138,17 @@
             .preview-placeholder { font-size: 12px; }
         }
 
-        /* 게임 영역 */
         #game-area {
             flex-grow: 1; position: relative; width: 100%;
-            display: flex; justify-content: center; align-items: center; /* 보드 중앙 정렬 */
+            display: flex; justify-content: center; align-items: center; 
             overflow: hidden;
         }
 
-        /* 중앙 보드 (크기를 50% 수준으로 축소) */
         #game-board {
             position: relative;
             background-color: rgba(255, 255, 255, 0.4);
             box-shadow: inset 0 0 20px rgba(0,0,0,0.1);
-            border: 2px dashed #9ca3af; /* 보드 가이드선 */
+            border: 2px dashed #9ca3af; 
             border-radius: 8px;
         }
 
@@ -163,7 +157,6 @@
             opacity: 0.15; pointer-events: none; border-radius: 8px;
         }
 
-        /* 조각들이 들어가는 컨테이너 (game-area 크기와 동일) */
         #pieces-container {
             position: absolute; top: 0; left: 0;
             width: 100%; height: 100%;
@@ -181,7 +174,6 @@
             filter: drop-shadow(5px 10px 15px rgba(0,0,0,0.5)) brightness(1.1);
         }
 
-        /* 병합 시 시각적 효과 (깜빡임) */
         .flash { animation: flashAnim 0.3s ease-out; }
         @keyframes flashAnim {
             0% { filter: brightness(1) drop-shadow(0 0 0 rgba(79, 70, 229, 0)); }
@@ -200,7 +192,6 @@
             pointer-events: none; z-index: 9999;
         }
 
-        /* 모달 */
         #message-modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center;
@@ -208,7 +199,7 @@
         }
         #message-modal.show { opacity: 1; pointer-events: auto; }
         .modal-content { background: white; padding: 30px; border-radius: 12px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-width: 80%; }
-        .modal-text { font-size: 18px; color: var(--text); margin-bottom: 20px; font-weight: 600; }
+        .modal-text { font-size: 18px; color: var(--text); margin-bottom: 20px; font-weight: 600; white-space: pre-line; }
         .modal-close-btn { background-color: var(--primary); }
     </style>
     </head>
@@ -278,7 +269,6 @@
             <div id="pieces-container"></div>
         </div>
 
-        <!-- 3차 패치: 폭죽 캔버스 -->
         <canvas id="confetti-canvas"></canvas>
 
         <div id="message-modal">
@@ -308,7 +298,6 @@
         const timerEl = document.getElementById('timer');
         const progressTextEl = document.getElementById('progress-text');
 
-        // 3차 패치: 추가된 DOM 요소들
         const gatherBtn = document.getElementById('gather-btn');
         const previewContainer = document.getElementById('preview-container');
         const previewImg = document.getElementById('preview-img');
@@ -317,22 +306,20 @@
         const ctxConfetti = confettiCanvas.getContext('2d');
 
         let img = new Image();
-        let memCanvas = document.createElement('canvas'); // 리사이즈된 전체 이미지를 담아둘 메모리 캔버스
+        let memCanvas = document.createElement('canvas'); 
         let pieces = [];
         let isGuideOn = true;
         let boardWidth, boardHeight;
         let pieceWidth, pieceHeight;
-        let tabSize; // 직소 퍼즐 볼록 튀어나온 부분의 크기
+        let tabSize;
         let currentZIndex = 10;
         let lockedCount = 0;
         let pieceGroupIdCounter = 0;
 
-        // 드래그 관련 상태
         let isDragging = false;
         let startX = 0, startY = 0;
         let activeGroupElements = [];
 
-        // 4차 패치: 타이머 변수
         let timerInterval = null;
         let secondsElapsed = 0;
 
@@ -357,7 +344,6 @@
             clearInterval(timerInterval);
         }
 
-        // 3차 패치: Web Audio API를 활용한 효과음 (외부 파일 불필요)
         let audioCtx;
         function initAudio() {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -393,7 +379,6 @@
             });
         }
 
-        // 3차 패치: 폭죽 파티클 시스템
         let particles = [];
         function startConfetti() {
             confettiCanvas.width = window.innerWidth;
@@ -423,7 +408,7 @@
                 p.tiltAngle += p.tiltAngleInc;
                 p.y += (Math.cos(p.tiltAngle) + 1 + p.r / 2) / 2;
                 p.x += Math.sin(p.tiltAngle) * 2;
-                p.dy += 0.1; // 중력
+                p.dy += 0.1;
                 p.x += p.dx;
                 p.y += p.dy;
                 if (p.y <= confettiCanvas.height) active = true;
@@ -442,7 +427,6 @@
         function showMessage(text) { modalText.textContent = text; modal.classList.add('show'); }
         modalCloseBtn.addEventListener('click', () => modal.classList.remove('show'));
 
-        // 활성화된 ObjectURL 메모리 관리용 변수
         let activeObjectURL = null;
         function revokeActiveURL() {
             if (activeObjectURL) {
@@ -451,44 +435,37 @@
             }
         }
 
-        // 안정성이 확보된 7차 사진 선택 컨트롤러
         imageUpload.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (!file) return;
 
-            revokeActiveURL(); // 이전 메모리 클리어
+            revokeActiveURL();
             piecesContainer.innerHTML = '';
             
             previewPlaceholder.textContent = "불러오는 중...";
             previewPlaceholder.style.display = 'flex';
             previewImg.style.display = 'none';
 
-            // 이미지 로드 성공 시 실행할 통합 함수
             const onImageLoadSuccess = () => {
                 gameBoard.style.display = 'block';
                 previewImg.src = img.src;
                 previewImg.style.display = 'block';
                 previewPlaceholder.style.display = 'none';
-                previewPlaceholder.textContent = "미리 보기";
                 
                 initBoard();
             };
 
-            // 1차 시도: ObjectURL 방식 (메모리 로드가 가장 빠른 기기 우대)
             activeObjectURL = URL.createObjectURL(file);
             img.onload = onImageLoadSuccess;
 
-            // 1차 시도 실패 시 (M1 iPadOS 특유의 Blob 디코딩 버그 대응)
             img.onerror = () => {
                 revokeActiveURL();
-                
-                // 2차 백업 시도: FileReader를 사용한 바이너리 변환 로드 (Safari 우회 최적화)
                 const reader = new FileReader();
                 reader.onload = (event) => {
                     img.onload = onImageLoadSuccess;
                     img.onerror = () => {
                         previewPlaceholder.textContent = "선택 실패";
-                        showMessage("이미지 파일 해독에 실패했습니다. 다른 사진첩 이미지나 스크린샷으로 테스트해보세요.");
+                        showMessage("이미지 파일 해독에 실패했습니다.");
                     };
                     img.src = event.target.result;
                 };
@@ -507,12 +484,11 @@
         });
 
         function initBoard() {
-            // 5차 패치: 기기 해상도에 맞춰 퍼즐 보드 크기 비율 다르게 적용
             const areaWidth = gameArea.clientWidth;
             const areaHeight = gameArea.clientHeight;
             
             const isMobile = window.innerWidth < 768;
-            const scaleFactor = isMobile ? 0.8 : 0.55; // 모바일/태블릿에서는 보드를 80% 크기로 확대
+            const scaleFactor = isMobile ? 0.8 : 0.55;
             
             const maxBoardWidth = areaWidth * scaleFactor;
             const maxBoardHeight = areaHeight * scaleFactor;
@@ -524,7 +500,6 @@
             gameBoard.style.width = `${boardWidth}px`;
             gameBoard.style.height = `${boardHeight}px`;
 
-            // 메모리 캔버스 및 워터마크에 그리기
             memCanvas.width = boardWidth; memCanvas.height = boardHeight;
             memCanvas.getContext('2d').drawImage(img, 0, 0, boardWidth, boardHeight);
             
@@ -534,40 +509,31 @@
 
         startBtn.addEventListener('click', () => {
             if (!img.src) { showMessage("먼저 사진을 불러와주세요."); return; }
-            initAudio(); // 3차 패치: 게임 시작 시 오디오 컨텍스트 초기화
+            initAudio(); 
             piecesContainer.innerHTML = '';
             pieces = []; lockedCount = 0; pieceGroupIdCounter = 0;
             
-            // 4차 패치: 타이머 및 진행도 초기화
             updateProgress();
             startTimer();
-
             initBoard();
 
             const grid = parseInt(difficultySelect.value);
             pieceWidth = boardWidth / grid;
             pieceHeight = boardHeight / grid;
-            // 탭 사이즈는 조각 크기의 약 22%
             tabSize = Math.min(pieceWidth, pieceHeight) * 0.22; 
 
             generateJigsawPieces(grid);
         });
 
-        // 퍼즐 조각들의 볼록/오목 형태 정보를 생성 및 캔버스 렌더링
         function generateJigsawPieces(grid) {
-            // 각 조각의 모양(shape) 정보: 0: 가장자리, 1: 탭(볼록), -1: 블랭크(오목)
             let shapes = [];
             for (let y = 0; y < grid; y++) {
                 shapes[y] = [];
                 for (let x = 0; x < grid; x++) {
                     shapes[y][x] = { top: 0, right: 0, bottom: 0, left: 0 };
-                    // 위쪽 (이전 줄의 아래쪽 반대)
                     if (y > 0) shapes[y][x].top = -shapes[y-1][x].bottom;
-                    // 왼쪽 (이전 칸의 오른쪽 반대)
                     if (x > 0) shapes[y][x].left = -shapes[y][x-1].right;
-                    // 오른쪽 (랜덤: 1 or -1)
                     if (x < grid - 1) shapes[y][x].right = Math.random() < 0.5 ? 1 : -1;
-                    // 아래쪽 (랜덤: 1 or -1)
                     if (y < grid - 1) shapes[y][x].bottom = Math.random() < 0.5 ? 1 : -1;
                 }
             }
@@ -579,14 +545,12 @@
             }
         }
 
-        // 베지에 곡선으로 직소 퍼즐 한 조각의 윤곽선 패스 그리기
         function drawJigsawPath(ctx, w, h, shape, t) {
             const { top, right, bottom, left } = shape;
             const cx = w/2, cy = h/2;
             ctx.beginPath();
             ctx.moveTo(0, 0);
             
-            // Top
             if (top === 0) ctx.lineTo(w, 0);
             else {
                 ctx.lineTo(cx - t*0.8, 0);
@@ -594,7 +558,6 @@
                 ctx.bezierCurveTo(cx + t*1.2, -t*top, cx + t, -t*0.6*top, cx + t*0.8, 0);
                 ctx.lineTo(w, 0);
             }
-            // Right
             if (right === 0) ctx.lineTo(w, h);
             else {
                 ctx.lineTo(w, cy - t*0.8);
@@ -602,7 +565,6 @@
                 ctx.bezierCurveTo(w + t*right, cy + t*1.2, w + t*0.6*right, cy + t, w, cy + t*0.8);
                 ctx.lineTo(w, h);
             }
-            // Bottom
             if (bottom === 0) ctx.lineTo(0, h);
             else {
                 ctx.lineTo(cx + t*0.8, h);
@@ -610,7 +572,6 @@
                 ctx.bezierCurveTo(cx - t*1.2, h + t*bottom, cx - t, h + t*0.6*bottom, cx - t*0.8, h);
                 ctx.lineTo(0, h);
             }
-            // Left
             if (left === 0) ctx.lineTo(0, 0);
             else {
                 ctx.lineTo(0, cy + t*0.8);
@@ -621,18 +582,15 @@
             ctx.closePath();
         }
 
-        // 개별 퍼즐 캔버스 생성 (마스킹 적용)
         function createPieceCanvas(gridX, gridY, shape) {
             const canvas = document.createElement('canvas');
-            // 탭이 튀어나가는 영역을 고려하여 캔버스 크기를 넉넉하게 잡음
             const canvasWidth = pieceWidth + tabSize * 2;
             const canvasHeight = pieceHeight + tabSize * 2;
             canvas.width = canvasWidth; canvas.height = canvasHeight;
             canvas.className = 'puzzle-piece';
             
-            // 데이터 속성 (고유 ID, 그룹 ID, 정답 타겟 좌표)
             canvas.dataset.id = `${gridX}-${gridY}`;
-            canvas.dataset.groupId = pieceGroupIdCounter++; // 처음엔 각 조각이 개별 그룹
+            canvas.dataset.groupId = pieceGroupIdCounter++; 
             
             const targetX = gridX * pieceWidth;
             const targetY = gridY * pieceHeight;
@@ -641,25 +599,19 @@
 
             const ctx = canvas.getContext('2d');
             
-            // 오프셋 설정 (캔버스 정중앙을 조각의 시작점 0,0으로 맞춤)
             ctx.translate(tabSize, tabSize);
-            
-            // 패스 그리고 마스킹
             drawJigsawPath(ctx, pieceWidth, pieceHeight, shape, tabSize);
             ctx.clip();
             
-            // 메모리 캔버스에서 해당 위치의 이미지를 복사해서 그림
             ctx.drawImage(memCanvas, 
                 targetX - tabSize, targetY - tabSize, canvasWidth, canvasHeight, 
                 -tabSize, -tabSize, canvasWidth, canvasHeight
             );
             
-            // 윤곽선 그려서 직소 느낌 강조
             ctx.lineWidth = 1;
             ctx.strokeStyle = "rgba(0,0,0,0.2)";
             ctx.stroke();
 
-            // 렌더링된 캔버스를 화면 밖(보드 주변)으로 분산 배치
             const pos = getRandomPositionOutsideBoard(canvasWidth, canvasHeight);
             canvas.style.left = `${pos.x}px`;
             canvas.style.top = `${pos.y}px`;
@@ -669,12 +621,10 @@
             addDragEvents(canvas);
         }
 
-        // 보드 중앙 영역을 회피하여 화면 가장자리에 좌표 생성 알고리즘
         function getRandomPositionOutsideBoard(cWidth, cHeight) {
             const boardRect = gameBoard.getBoundingClientRect();
             const areaRect = gameArea.getBoundingClientRect();
             
-            // 5차 패치: 모바일 화면에서는 여백을 줄여 스폰 효율 상승
             const isMobile = window.innerWidth < 768;
             const margin = isMobile ? 5 : 20;
             
@@ -688,15 +638,12 @@
             let maxAttempts = 200;
 
             while (isOverlap && maxAttempts > 0) {
-                // 4차 패치: 조각이 화면 밖으로 잘리지 않도록 안전 여백(margin) 확보
                 x = Math.max(5, Math.random() * (areaRect.width - cWidth - 10));
                 y = Math.max(5, Math.random() * (areaRect.height - cHeight - 10));
                 
-                // 생성된 좌표가 중앙 보드 박스 내부인지 검사
                 const rightX = x + cWidth;
                 const bottomY = y + cHeight;
                 
-                // 5차 패치: 미리보기 창이 컨트롤 바 쪽으로 이동했으므로, 보드 충돌 검사만 진행
                 if (rightX < bLeft || x > bRight || bottomY < bTop || y > bBottom) {
                     isOverlap = false; 
                 }
@@ -705,12 +652,10 @@
             return { x, y };
         }
 
-        // 3차 패치: 조각 모으기 버튼 로직 (그룹화 유지 버그 수정)
         gatherBtn.addEventListener('click', () => {
             if (pieces.length === 0) return;
             const areaRect = gameArea.getBoundingClientRect();
             
-            // 1. 맞춰지지 않은(locked 아닌) 조각들을 그룹별로 분류
             const groups = {};
             pieces.forEach(p => {
                 if (!p.classList.contains('locked')) {
@@ -720,22 +665,17 @@
                 }
             });
 
-            // 2. 그룹 단위로 동일한 거리만큼 이동시켜 결합 형태 유지
             Object.values(groups).forEach(groupPieces => {
-                // 그룹의 기준점(첫 번째 조각)의 현재 위치
                 const basePiece = groupPieces[0];
                 const currentLeft = parseFloat(basePiece.style.left);
                 const currentTop = parseFloat(basePiece.style.top);
 
-                // 그룹 전체가 이동할 새로운 무작위 위치 (화면 상단 빈 공간 부근)
                 const randomX = Math.random() * (areaRect.width * 0.8);
                 const randomY = Math.random() * (areaRect.height * 0.2);
 
-                // 기준 조각의 이동 거리(변화량) 계산
                 const dx = randomX - currentLeft;
                 const dy = randomY - currentTop;
 
-                // 그룹 내 모든 조각을 동일한 거리(dx, dy)만큼 이동시켜서 모양 유지
                 groupPieces.forEach(p => {
                     const newLeft = parseFloat(p.style.left) + dx;
                     const newTop = parseFloat(p.style.top) + dy;
@@ -759,10 +699,9 @@
             guideIcon.textContent = isGuideOn ? '💡' : '💤';
             
             toggleGuideBtn.style.backgroundColor = isGuideOn ? 'var(--primary)' : '#6b7280';
-            toggleGuideBtn.style.boxShadow = isGuideOn ? '0 5px 0 var(--primary-hover)' : '0 5px 0 #4b5563';
+            toggleGuideBtn.style.boxShadow = isGuideOn ? '0 4px 0 var(--primary-hover)' : '0 4px 0 #4b5563';
         });
 
-        // === 다중 그룹 드래그 앤 드롭 & 결합 로직 ===
         function addDragEvents(piece) {
             piece.addEventListener('mousedown', dragStart);
             piece.addEventListener('touchstart', dragStart, { passive: false });
@@ -774,15 +713,12 @@
             isDragging = true;
             
             const groupId = e.target.dataset.groupId;
-            // 같은 그룹에 속한 조각들을 모두 선택
             activeGroupElements = pieces.filter(p => p.dataset.groupId === groupId && !p.classList.contains('locked'));
 
             const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
             const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
             
             startX = clientX; startY = clientY;
-            
-            // 4차 패치: 그룹 전체의 Z-Index를 동기화하여 다른 모든 조각 위로 올림
             currentZIndex++;
 
             activeGroupElements.forEach(p => {
@@ -808,13 +744,11 @@
             const dx = clientX - startX;
             const dy = clientY - startY;
 
-            // 그룹 전체를 마우스 이동량(delta)만큼 동시 이동
             activeGroupElements.forEach(p => {
                 let newLeft = parseFloat(p.dataset.initLeft) + dx;
                 let newTop = parseFloat(p.dataset.initTop) + dy;
                 
-                // 4차 패치: 드래그 중 화면 밖으로 완전히 이탈 방지
-                const maxLeft = gameArea.clientWidth - 50; // 최소 50px은 보이게
+                const maxLeft = gameArea.clientWidth - 50; 
                 const maxTop = gameArea.clientHeight - 50;
                 newLeft = Math.max(-p.clientWidth + 50, Math.min(newLeft, maxLeft));
                 newTop = Math.max(-p.clientHeight + 50, Math.min(newTop, maxTop));
@@ -829,14 +763,12 @@
             isDragging = false;
             activeGroupElements.forEach(p => p.classList.remove('dragging'));
 
-            const threshold = 30; // 자석 효과 픽셀 오차 허용 범위
+            const threshold = 30; 
             let snappedToBoard = false;
 
-            // 검사를 위해 현재 드래그한 그룹의 첫번째 조각을 기준점으로 삼음
             const baseP = activeGroupElements[0];
             const baseCurX = parseFloat(baseP.style.left);
             const baseCurY = parseFloat(baseP.style.top);
-            // tabSize 오프셋을 뺀 순수 조각 좌표
             const baseTargetX = parseFloat(baseP.dataset.targetX) - tabSize; 
             const baseTargetY = parseFloat(baseP.dataset.targetY) - tabSize;
 
@@ -845,12 +777,11 @@
             const boardOriginX = boardRect.left - areaRect.left;
             const boardOriginY = boardRect.top - areaRect.top;
 
-            // 1. 보드 스냅 체크 (보드 위의 정답 위치에 맞았는지)
             const absoluteTargetX = boardOriginX + baseTargetX;
             const absoluteTargetY = boardOriginY + baseTargetY;
 
+            // 1. 보드 스냅 체크
             if (Math.abs(baseCurX - absoluteTargetX) < threshold && Math.abs(baseCurY - absoluteTargetY) < threshold) {
-                // 위치 맞음 -> 그룹 전체를 보드에 고정
                 const alignDx = absoluteTargetX - baseCurX;
                 const alignDy = absoluteTargetY - baseCurY;
                 
@@ -862,37 +793,46 @@
                 });
                 snappedToBoard = true;
                 playSnapSound(); 
-                updateProgress(); // 4차 패치: 진행도 UI 업데이트
+                updateProgress(); 
             }
 
             // 2. 외부 조각 스냅 (그룹 간 결합 체크)
             if (!snappedToBoard) {
                 let merged = false;
 
-                // 현재 그룹의 모든 조각과 보드 밖에 있는 다른 그룹의 조각들을 1:1로 거리 비교
                 for (let activeP of activeGroupElements) {
                     const aCurX = parseFloat(activeP.style.left);
                     const aCurY = parseFloat(activeP.style.top);
                     const aTarX = parseFloat(activeP.dataset.targetX);
                     const aTarY = parseFloat(activeP.dataset.targetY);
+                    
+                    // 8차 패치: 현재 드래그 중인 조각의 Grid 좌표 추출
+                    const [aGridX, aGridY] = activeP.dataset.id.split('-').map(Number);
 
                     for (let otherP of pieces) {
-                        // 같은 그룹이거나, 이미 보드에 박힌 조각은 검사 제외
                         if (otherP.classList.contains('locked') || otherP.dataset.groupId === activeP.dataset.groupId) continue;
+
+                        // 8차 패치: 대상 조각의 Grid 좌표 추출
+                        const [oGridX, oGridY] = otherP.dataset.id.split('-').map(Number);
+
+                        // 8차 패치: 오직 "상하좌우로 인접한(Neighbor)" 조각인지 엄격하게 검사
+                        const isAdjacent = (Math.abs(aGridX - oGridX) === 1 && aGridY === oGridY) || 
+                                           (Math.abs(aGridY - oGridY) === 1 && aGridX === oGridX);
+
+                        // 원래 인접한 조각이 아니라면 거리차를 검사하지 않고 무시
+                        if (!isAdjacent) continue;
 
                         const oCurX = parseFloat(otherP.style.left);
                         const oCurY = parseFloat(otherP.style.top);
                         const oTarX = parseFloat(otherP.dataset.targetX);
                         const oTarY = parseFloat(otherP.dataset.targetY);
 
-                        // 두 조각의 논리적 정답 거리차와 현재 렌더링된 물리적 거리차 비교
                         const targetDiffX = aTarX - oTarX;
                         const targetDiffY = aTarY - oTarY;
                         const curDiffX = aCurX - oCurX;
                         const curDiffY = aCurY - oCurY;
 
                         if (Math.abs(targetDiffX - curDiffX) < threshold && Math.abs(targetDiffY - curDiffY) < threshold) {
-                            // 스냅 결합 성사! active 그룹을 other 그룹 위치 기준으로 이동시킴
                             const fixDx = targetDiffX - curDiffX;
                             const fixDy = targetDiffY - curDiffY;
                             const newGroupId = otherP.dataset.groupId;
@@ -900,28 +840,25 @@
                             activeGroupElements.forEach(p => {
                                 p.style.left = `${parseFloat(p.style.left) + fixDx}px`;
                                 p.style.top = `${parseFloat(p.style.top) + fixDy}px`;
-                                p.dataset.groupId = newGroupId; // 그룹 합병
+                                p.dataset.groupId = newGroupId; 
                                 
-                                // 깜빡임 이펙트
                                 p.classList.add('flash');
                                 setTimeout(() => p.classList.remove('flash'), 300);
                             });
                             merged = true;
-                            playSnapSound(); // 3차 패치: 외부 그룹 결합 시 효과음
+                            playSnapSound(); 
                             break;
                         }
                     }
-                    if (merged) break; // 한 번의 드롭에서 한 그룹과만 결합 처리
+                    if (merged) break; 
                 }
             }
 
-            // 완성 체크
             if (lockedCount === pieces.length && pieces.length > 0) {
-                stopTimer(); // 4차 패치: 타이머 정지
+                stopTimer(); 
                 playTadaSound(); 
                 startConfetti(); 
                 
-                // 4차 패치: 결과 텍스트 고도화
                 const timeString = timerEl.textContent;
                 setTimeout(() => showMessage(`🎉 완벽해요! 🎉\n소요 시간: ${timeString}\n다른 난이도로 다시 도전해보세요!`), 300);
             }
