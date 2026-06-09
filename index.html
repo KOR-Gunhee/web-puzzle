@@ -442,20 +442,64 @@
         function showMessage(text) { modalText.textContent = text; modal.classList.add('show'); }
         modalCloseBtn.addEventListener('click', () => modal.classList.remove('show'));
 
+        // 활성화된 ObjectURL 메모리 관리용 변수
+        let activeObjectURL = null;
+        function revokeActiveURL() {
+            if (activeObjectURL) {
+                URL.revokeObjectURL(activeObjectURL);
+                activeObjectURL = null;
+            }
+        }
+
+        // 안정성이 확보된 7차 사진 선택 컨트롤러
         imageUpload.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (!file) return;
-            img.onload = () => {
+
+            revokeActiveURL(); // 이전 메모리 클리어
+            piecesContainer.innerHTML = '';
+            
+            previewPlaceholder.textContent = "불러오는 중...";
+            previewPlaceholder.style.display = 'flex';
+            previewImg.style.display = 'none';
+
+            // 이미지 로드 성공 시 실행할 통합 함수
+            const onImageLoadSuccess = () => {
                 gameBoard.style.display = 'block';
-                // 6차 패치: 미리보기 이미지 노출 및 플레이스홀더 숨김
                 previewImg.src = img.src;
                 previewImg.style.display = 'block';
                 previewPlaceholder.style.display = 'none';
+                previewPlaceholder.textContent = "미리 보기";
                 
                 initBoard();
-                piecesContainer.innerHTML = '';
             };
-            img.src = URL.createObjectURL(file);
+
+            // 1차 시도: ObjectURL 방식 (메모리 로드가 가장 빠른 기기 우대)
+            activeObjectURL = URL.createObjectURL(file);
+            img.onload = onImageLoadSuccess;
+
+            // 1차 시도 실패 시 (M1 iPadOS 특유의 Blob 디코딩 버그 대응)
+            img.onerror = () => {
+                revokeActiveURL();
+                
+                // 2차 백업 시도: FileReader를 사용한 바이너리 변환 로드 (Safari 우회 최적화)
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    img.onload = onImageLoadSuccess;
+                    img.onerror = () => {
+                        previewPlaceholder.textContent = "선택 실패";
+                        showMessage("이미지 파일 해독에 실패했습니다. 다른 사진첩 이미지나 스크린샷으로 테스트해보세요.");
+                    };
+                    img.src = event.target.result;
+                };
+                reader.onerror = () => {
+                    previewPlaceholder.textContent = "선택 실패";
+                    showMessage("파일을 읽는 과정에서 오류가 발생했습니다.");
+                };
+                reader.readAsDataURL(file);
+            };
+
+            img.src = activeObjectURL;
         });
 
         window.addEventListener('resize', () => {
