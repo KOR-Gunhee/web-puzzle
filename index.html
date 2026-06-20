@@ -4,7 +4,7 @@
         <meta charset="UTF-8">
         <meta name="viewport"
             content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-        <title>커스텀 사진 퍼즐 게임 - v8</title>
+        <title>커스텀 사진 퍼즐 게임 - v10</title>
         <style>
         :root {
             --bg-color: #e5e7eb;
@@ -33,57 +33,25 @@
             z-index: 100;
         }
 
-        .top-layout {
+        .controls {
             display: flex;
-            gap: 10px;
-            padding: 12px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        .left-controls {
-            flex: 55;
-            display: flex;
-            flex-direction: column;
+            flex-wrap: wrap;
             gap: 8px;
-        }
-
-        .control-row {
-            display: flex;
-            gap: 8px;
+            padding: 10px 12px;
             width: 100%;
-        }
-
-        .control-row > * {
-            flex: 1;
-            width: 100%;
-        }
-
-        .right-preview {
-            flex: 45;
-            border: 2px dashed #d1d5db;
-            border-radius: 12px;
-            background: #f9fafb;
-            display: flex;
-            align-items: center;
             justify-content: center;
-            overflow: hidden;
-            padding: 4px; /* 8차 패치: 테두리 여백 추가 */
         }
 
-        .preview-placeholder {
-            color: #9ca3af;
-            font-weight: 700;
-            font-size: 14px;
+        .control-item {
+            flex: 1 1 calc(33.333% - 8px);
+            min-width: 70px;
+            max-width: 130px;
+            height: 55px;
         }
 
-        /* 8차 패치: 원본 비율 유지 (contain) 및 절대위치 해제 */
-        #preview-img { 
-            max-width: 100%; 
-            max-height: 100%; 
-            object-fit: contain; 
-            display: none;
-            border-radius: 8px;
+        @media (min-width: 768px) {
+            .controls { gap: 10px; padding: 12px 20px; }
+            .control-item { flex: 1 1 auto; max-width: 140px; height: 65px; }
         }
 
         #status-bar-wrapper {
@@ -105,38 +73,33 @@
 
         button, .file-upload-btn {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            padding: 8px 4px; border: none; border-radius: 12px;
+            padding: 4px; border: none; border-radius: 12px;
             background-color: var(--primary); color: white;
             cursor: pointer; transition: all 0.1s;
             box-shadow: 0 4px 0 var(--primary-hover);
-            box-sizing: border-box; height: 100%;
+            box-sizing: border-box; height: 100%; width: 100%;
         }
         button:active, .file-upload-btn:active { 
             transform: translateY(4px); box-shadow: 0 0 0 var(--primary-hover); 
         }
-        .btn-icon { font-size: 24px; margin-bottom: 2px; pointer-events: none; }
-        .btn-text { font-size: 12px; font-weight: 800; pointer-events: none; text-align: center; word-break: keep-all; line-height: 1.1; }
+        .btn-icon { font-size: 20px; margin-bottom: 2px; pointer-events: none; }
+        .btn-text { font-size: 11px; font-weight: 800; pointer-events: none; text-align: center; word-break: keep-all; line-height: 1.1; }
         
+        @media (min-width: 768px) {
+            .btn-icon { font-size: 24px; }
+            .btn-text { font-size: 13px; }
+        }
+
         select { 
             background-color: white; color: var(--text); border: 2px solid #d1d5db; 
-            padding: 8px 4px; border-radius: 12px; font-size: 13px; font-weight: 700;
-            width: 100%; box-sizing: border-box; outline: none; cursor: pointer;
-            box-shadow: 0 4px 0 #e5e7eb; text-align: center;
+            padding: 4px; border-radius: 12px; font-size: 12px; font-weight: 700;
+            width: 100%; height: 100%; box-sizing: border-box; outline: none; cursor: pointer;
+            box-shadow: 0 4px 0 #e5e7eb; text-align: center; text-align-last: center;
         }
+        @media (min-width: 768px) { select { font-size: 14px; } }
+        
         input[type="file"] { display: none; }
-        .file-upload-wrapper { display: block; flex: 1; }
-
-        @media (max-width: 600px) {
-            .btn-icon { font-size: 20px; }
-            .btn-text { font-size: 11px; }
-            button, .file-upload-btn { padding: 6px 2px; border-radius: 10px; box-shadow: 0 3px 0 var(--primary-hover); }
-            button:active, .file-upload-btn:active { transform: translateY(3px); }
-            select { font-size: 12px; padding: 6px 2px; border-radius: 10px; box-shadow: 0 3px 0 #e5e7eb; }
-            .top-layout { gap: 8px; padding: 10px; }
-            .left-controls { gap: 6px; }
-            .control-row { gap: 6px; }
-            .preview-placeholder { font-size: 12px; }
-        }
+        .file-upload-wrapper { display: block; }
 
         #game-area {
             flex-grow: 1; position: relative; width: 100%;
@@ -154,7 +117,7 @@
 
         #watermark {
             position: absolute; top: 0; left: 0;
-            opacity: 0.15; pointer-events: none; border-radius: 8px;
+            pointer-events: none; border-radius: 8px;
         }
 
         #pieces-container {
@@ -200,58 +163,75 @@
         #message-modal.show { opacity: 1; pointer-events: auto; }
         .modal-content { background: white; padding: 30px; border-radius: 12px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-width: 80%; }
         .modal-text { font-size: 18px; color: var(--text); margin-bottom: 20px; font-weight: 600; white-space: pre-line; }
-        .modal-close-btn { background-color: var(--primary); }
+        .modal-close-btn { background-color: var(--primary); width: 100%; padding: 12px; font-size: 16px; }
+
+        #preview-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center;
+            z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+        }
+        #preview-modal.show { opacity: 1; pointer-events: auto; }
+        .preview-modal-content {
+            position: relative; max-width: 90%; max-height: 90%;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .preview-modal-content img {
+            max-width: 100%; max-height: 85vh; object-fit: contain;
+            border-radius: 12px; box-shadow: 0 4px 25px rgba(0,0,0,0.5);
+            border: 4px solid white;
+        }
+        .preview-close-btn {
+            position: absolute; top: -15px; right: -15px;
+            background: #ef4444; color: white; width: 40px; height: 40px; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-weight: bold; font-size: 20px; cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4); border: 2px solid white; padding: 0;
+        }
     </style>
     </head>
     <body>
 
         <div id="top-section">
-            <div class="top-layout">
-                <div class="left-controls">
-                    <div class="control-row">
-                        <label class="file-upload-wrapper">
-                            <div class="file-upload-btn">
-                                <span class="btn-icon">🖼️</span>
-                                <span class="btn-text">사진 선택</span>
-                            </div>
-                            <input type="file" id="image-upload"
-                                accept="image/*">
-                        </label>
-                        <button id="toggle-guide">
-                            <span class="btn-icon" id="guide-icon">💡</span>
-                            <span class="btn-text" id="guide-text">가이드
-                                OFF</span>
-                        </button>
+            <div class="controls">
+                <label class="file-upload-wrapper control-item">
+                    <div class="file-upload-btn">
+                        <span class="btn-icon">🖼️</span>
+                        <span class="btn-text">사진 선택</span>
                     </div>
+                    <input type="file" id="image-upload" accept="image/*">
+                </label>
 
-                    <div class="control-row">
-                        <button id="gather-btn">
-                            <span class="btn-icon">🧲</span>
-                            <span class="btn-text">조각 모으기</span>
-                        </button>
-                        <button id="start-btn"
-                            style="background-color: #ef4444; box-shadow: 0 4px 0 #b91c1c;">
-                            <span class="btn-icon">✨</span>
-                            <span class="btn-text">퍼즐 섞기</span>
-                        </button>
-                    </div>
-
-                    <div class="control-row">
-                        <select id="difficulty">
-                            <option value="2">🧩 4조각 (아기용)</option>
-                            <option value="3" selected>🧩 9조각 (쉬움)</option>
-                            <option value="4">🧩 16조각 (보통)</option>
-                            <option value="5">🧩 25조각 (어려움)</option>
-                            <option value="6">🧩 36조각 (매우 어려움)</option>
-                        </select>
-                    </div>
+                <div class="control-item">
+                    <select id="difficulty">
+                        <option value="2">4조각 (아기)</option>
+                        <option value="3" selected>9조각 (쉬움)</option>
+                        <option value="4">16조각 (보통)</option>
+                        <option value="5">25조각 (어려움)</option>
+                        <option value="6">36조각 (고수)</option>
+                    </select>
                 </div>
 
-                <div id="preview-container" class="right-preview">
-                    <div class="preview-placeholder" id="preview-placeholder">미리
-                        보기</div>
-                    <img id="preview-img" src>
-                </div>
+                <button id="toggle-guide" class="control-item">
+                    <span class="btn-icon" id="guide-icon">💡</span>
+                    <span class="btn-text" id="guide-text">가이드 OFF</span>
+                </button>
+
+                <button id="show-preview-btn" class="control-item"
+                    style="display: none; background-color: #10b981; box-shadow: 0 4px 0 #059669;">
+                    <span class="btn-icon">👀</span>
+                    <span class="btn-text">완성 그림</span>
+                </button>
+
+                <button id="gather-btn" class="control-item">
+                    <span class="btn-icon">🧲</span>
+                    <span class="btn-text">조각 모으기</span>
+                </button>
+
+                <button id="start-btn" class="control-item"
+                    style="background-color: #ef4444; box-shadow: 0 4px 0 #b91c1c;">
+                    <span class="btn-icon">✨</span>
+                    <span class="btn-text">퍼즐 섞기</span>
+                </button>
             </div>
 
             <div id="status-bar-wrapper">
@@ -274,10 +254,15 @@
         <div id="message-modal">
             <div class="modal-content">
                 <div class="modal-text" id="modal-text">메시지</div>
-                <button class="modal-close-btn" id="modal-close">
-                    <span class="btn-icon">✅</span>
-                    <span class="btn-text">확인</span>
-                </button>
+                <button class="modal-close-btn" id="modal-close">확인</button>
+            </div>
+        </div>
+
+        <div id="preview-modal">
+            <div class="preview-modal-content">
+                <button class="preview-close-btn"
+                    id="close-preview-btn">✕</button>
+                <img id="preview-modal-img" src>
             </div>
         </div>
 
@@ -299,11 +284,13 @@
         const progressTextEl = document.getElementById('progress-text');
 
         const gatherBtn = document.getElementById('gather-btn');
-        const previewContainer = document.getElementById('preview-container');
-        const previewImg = document.getElementById('preview-img');
-        const previewPlaceholder = document.getElementById('preview-placeholder');
         const confettiCanvas = document.getElementById('confetti-canvas');
         const ctxConfetti = confettiCanvas.getContext('2d');
+
+        const showPreviewBtn = document.getElementById('show-preview-btn');
+        const previewModal = document.getElementById('preview-modal');
+        const previewModalImg = document.getElementById('preview-modal-img');
+        const closePreviewBtn = document.getElementById('close-preview-btn');
 
         let img = new Image();
         let memCanvas = document.createElement('canvas'); 
@@ -322,6 +309,17 @@
 
         let timerInterval = null;
         let secondsElapsed = 0;
+
+        showPreviewBtn.addEventListener('click', () => {
+            if (img.src) {
+                previewModalImg.src = img.src;
+                previewModal.classList.add('show');
+            }
+        });
+        closePreviewBtn.addEventListener('click', () => previewModal.classList.remove('show'));
+        previewModal.addEventListener('click', (e) => {
+            if (e.target === previewModal) previewModal.classList.remove('show');
+        });
 
         function updateProgress() {
             progressTextEl.textContent = `${lockedCount} / ${pieces.length}`;
@@ -442,16 +440,9 @@
             revokeActiveURL();
             piecesContainer.innerHTML = '';
             
-            previewPlaceholder.textContent = "불러오는 중...";
-            previewPlaceholder.style.display = 'flex';
-            previewImg.style.display = 'none';
-
             const onImageLoadSuccess = () => {
                 gameBoard.style.display = 'block';
-                previewImg.src = img.src;
-                previewImg.style.display = 'block';
-                previewPlaceholder.style.display = 'none';
-                
+                showPreviewBtn.style.display = 'flex'; 
                 initBoard();
             };
 
@@ -463,16 +454,10 @@
                 const reader = new FileReader();
                 reader.onload = (event) => {
                     img.onload = onImageLoadSuccess;
-                    img.onerror = () => {
-                        previewPlaceholder.textContent = "선택 실패";
-                        showMessage("이미지 파일 해독에 실패했습니다.");
-                    };
+                    img.onerror = () => showMessage("이미지 파일 해독에 실패했습니다.");
                     img.src = event.target.result;
                 };
-                reader.onerror = () => {
-                    previewPlaceholder.textContent = "선택 실패";
-                    showMessage("파일을 읽는 과정에서 오류가 발생했습니다.");
-                };
+                reader.onerror = () => showMessage("파일을 읽는 과정에서 오류가 발생했습니다.");
                 reader.readAsDataURL(file);
             };
 
@@ -488,7 +473,7 @@
             const areaHeight = gameArea.clientHeight;
             
             const isMobile = window.innerWidth < 768;
-            const scaleFactor = isMobile ? 0.8 : 0.55;
+            const scaleFactor = isMobile ? 0.85 : 0.7; 
             
             const maxBoardWidth = areaWidth * scaleFactor;
             const maxBoardHeight = areaHeight * scaleFactor;
@@ -504,7 +489,11 @@
             memCanvas.getContext('2d').drawImage(img, 0, 0, boardWidth, boardHeight);
             
             watermarkCanvas.width = boardWidth; watermarkCanvas.height = boardHeight;
-            watermarkCanvas.getContext('2d').drawImage(memCanvas, 0, 0);
+            const wCtx = watermarkCanvas.getContext('2d');
+            wCtx.clearRect(0, 0, boardWidth, boardHeight);
+            wCtx.globalAlpha = 0.25; 
+            wCtx.drawImage(memCanvas, 0, 0);
+            wCtx.globalAlpha = 1.0;  
         }
 
         startBtn.addEventListener('click', () => {
@@ -538,54 +527,128 @@
                 }
             }
 
+            const wCtx = watermarkCanvas.getContext('2d');
+            
             for (let y = 0; y < grid; y++) {
                 for (let x = 0; x < grid; x++) {
                     createPieceCanvas(x, y, shapes[y][x]);
+
+                    // 가이드 이미지 윤곽선 그리기
+                    wCtx.save();
+                    wCtx.translate(x * pieceWidth, y * pieceHeight);
+                    wCtx.beginPath();
+                    drawJigsawPath(wCtx, pieceWidth, pieceHeight, shapes[y][x], tabSize);
+                    
+                    // 가이드라인을 부드러운 단일 선으로 변경하여 시인성 최적화
+                    wCtx.strokeStyle = "rgba(255, 255, 255, 0.4)";
+                    wCtx.lineWidth = 1.5;
+                    wCtx.stroke();
+                    wCtx.restore();
                 }
             }
         }
 
+        // 10차 패치: 부드럽고 자연스러운 직소 모양 베지에 곡선 재설계
         function drawJigsawPath(ctx, w, h, shape, t) {
             const { top, right, bottom, left } = shape;
             const cx = w/2, cy = h/2;
-            ctx.beginPath();
+            const neckWidth = t * 0.45; // 자연스러운 목 두께
+            const bulbWidth = t * 0.9;  // 둥글고 예쁜 머리
+            const bulbHeight = t; 
+            
             ctx.moveTo(0, 0);
             
             if (top === 0) ctx.lineTo(w, 0);
             else {
-                ctx.lineTo(cx - t*0.8, 0);
-                ctx.bezierCurveTo(cx - t, -t*0.6*top, cx - t*1.2, -t*top, cx, -t*top);
-                ctx.bezierCurveTo(cx + t*1.2, -t*top, cx + t, -t*0.6*top, cx + t*0.8, 0);
+                ctx.lineTo(cx - neckWidth, 0);
+                ctx.bezierCurveTo(
+                    cx - neckWidth, -bulbHeight * 0.1 * top,
+                    cx - bulbWidth, -bulbHeight * 0.3 * top,
+                    cx - bulbWidth, -bulbHeight * 0.6 * top
+                );
+                ctx.bezierCurveTo(
+                    cx - bulbWidth, -bulbHeight * 1.15 * top,
+                    cx + bulbWidth, -bulbHeight * 1.15 * top,
+                    cx + bulbWidth, -bulbHeight * 0.6 * top
+                );
+                ctx.bezierCurveTo(
+                    cx + bulbWidth, -bulbHeight * 0.3 * top,
+                    cx + neckWidth, -bulbHeight * 0.1 * top,
+                    cx + neckWidth, 0
+                );
                 ctx.lineTo(w, 0);
             }
+            
             if (right === 0) ctx.lineTo(w, h);
             else {
-                ctx.lineTo(w, cy - t*0.8);
-                ctx.bezierCurveTo(w + t*0.6*right, cy - t, w + t*right, cy - t*1.2, w + t*right, cy);
-                ctx.bezierCurveTo(w + t*right, cy + t*1.2, w + t*0.6*right, cy + t, w, cy + t*0.8);
+                ctx.lineTo(w, cy - neckWidth);
+                ctx.bezierCurveTo(
+                    w + bulbHeight * 0.1 * right, cy - neckWidth,
+                    w + bulbHeight * 0.3 * right, cy - bulbWidth,
+                    w + bulbHeight * 0.6 * right, cy - bulbWidth
+                );
+                ctx.bezierCurveTo(
+                    w + bulbHeight * 1.15 * right, cy - bulbWidth,
+                    w + bulbHeight * 1.15 * right, cy + bulbWidth,
+                    w + bulbHeight * 0.6 * right, cy + bulbWidth
+                );
+                ctx.bezierCurveTo(
+                    w + bulbHeight * 0.3 * right, cy + bulbWidth,
+                    w + bulbHeight * 0.1 * right, cy + neckWidth,
+                    w, cy + neckWidth
+                );
                 ctx.lineTo(w, h);
             }
+            
             if (bottom === 0) ctx.lineTo(0, h);
             else {
-                ctx.lineTo(cx + t*0.8, h);
-                ctx.bezierCurveTo(cx + t, h + t*0.6*bottom, cx + t*1.2, h + t*bottom, cx, h + t*bottom);
-                ctx.bezierCurveTo(cx - t*1.2, h + t*bottom, cx - t, h + t*0.6*bottom, cx - t*0.8, h);
+                ctx.lineTo(cx + neckWidth, h);
+                ctx.bezierCurveTo(
+                    cx + neckWidth, h + bulbHeight * 0.1 * bottom,
+                    cx + bulbWidth, h + bulbHeight * 0.3 * bottom,
+                    cx + bulbWidth, h + bulbHeight * 0.6 * bottom
+                );
+                ctx.bezierCurveTo(
+                    cx + bulbWidth, h + bulbHeight * 1.15 * bottom,
+                    cx - bulbWidth, h + bulbHeight * 1.15 * bottom,
+                    cx - bulbWidth, h + bulbHeight * 0.6 * bottom
+                );
+                ctx.bezierCurveTo(
+                    cx - bulbWidth, h + bulbHeight * 0.3 * bottom,
+                    cx - neckWidth, h + bulbHeight * 0.1 * bottom,
+                    cx - neckWidth, h
+                );
                 ctx.lineTo(0, h);
             }
+            
             if (left === 0) ctx.lineTo(0, 0);
             else {
-                ctx.lineTo(0, cy + t*0.8);
-                ctx.bezierCurveTo(-t*0.6*left, cy + t, -t*left, cy + t*1.2, -t*left, cy);
-                ctx.bezierCurveTo(-t*left, cy - t*1.2, -t*0.6*left, cy - t, 0, cy - t*0.8);
+                ctx.lineTo(0, cy + neckWidth);
+                ctx.bezierCurveTo(
+                    -bulbHeight * 0.1 * left, cy + neckWidth,
+                    -bulbHeight * 0.3 * left, cy + bulbWidth,
+                    -bulbHeight * 0.6 * left, cy + bulbWidth
+                );
+                ctx.bezierCurveTo(
+                    -bulbHeight * 1.15 * left, cy + bulbWidth,
+                    -bulbHeight * 1.15 * left, cy - bulbWidth,
+                    -bulbHeight * 0.6 * left, cy - bulbWidth
+                );
+                ctx.bezierCurveTo(
+                    -bulbHeight * 0.3 * left, cy - bulbWidth,
+                    -bulbHeight * 0.1 * left, cy - neckWidth,
+                    0, cy - neckWidth
+                );
                 ctx.lineTo(0, 0);
             }
-            ctx.closePath();
         }
 
         function createPieceCanvas(gridX, gridY, shape) {
             const canvas = document.createElement('canvas');
-            const canvasWidth = pieceWidth + tabSize * 2;
-            const canvasHeight = pieceHeight + tabSize * 2;
+            // 10차 패치: 패딩(Padding)을 1.5배로 넓혀 윤곽선이 캔버스 밖으로 잘리지 않도록 안전공간 확보
+            const pad = tabSize * 1.5; 
+            const canvasWidth = pieceWidth + pad * 2;
+            const canvasHeight = pieceHeight + pad * 2;
             canvas.width = canvasWidth; canvas.height = canvasHeight;
             canvas.className = 'puzzle-piece';
             
@@ -596,21 +659,34 @@
             const targetY = gridY * pieceHeight;
             canvas.dataset.targetX = targetX;
             canvas.dataset.targetY = targetY;
+            canvas.dataset.pad = pad; // 패딩값을 데이터로 저장
 
             const ctx = canvas.getContext('2d');
             
-            ctx.translate(tabSize, tabSize);
+            // 1. 이미지를 먼저 잘라 넣기 (Clipping)
+            ctx.save();
+            ctx.translate(pad, pad);
+            ctx.beginPath();
             drawJigsawPath(ctx, pieceWidth, pieceHeight, shape, tabSize);
             ctx.clip();
-            
             ctx.drawImage(memCanvas, 
-                targetX - tabSize, targetY - tabSize, canvasWidth, canvasHeight, 
-                -tabSize, -tabSize, canvasWidth, canvasHeight
+                targetX - pad, targetY - pad, canvasWidth, canvasHeight, 
+                -pad, -pad, canvasWidth, canvasHeight
             );
+            ctx.restore();
             
-            ctx.lineWidth = 1;
-            ctx.strokeStyle = "rgba(0,0,0,0.2)";
+            // 2. 잘라낸 이미지 '위'에 선명한 테두리선 그리기
+            ctx.save();
+            ctx.translate(pad, pad);
+            ctx.beginPath();
+            drawJigsawPath(ctx, pieceWidth, pieceHeight, shape, tabSize);
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = "rgba(0,0,0,0.3)";
             ctx.stroke();
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = "rgba(255,255,255,0.4)";
+            ctx.stroke();
+            ctx.restore();
 
             const pos = getRandomPositionOutsideBoard(canvasWidth, canvasHeight);
             canvas.style.left = `${pos.x}px`;
@@ -769,8 +845,11 @@
             const baseP = activeGroupElements[0];
             const baseCurX = parseFloat(baseP.style.left);
             const baseCurY = parseFloat(baseP.style.top);
-            const baseTargetX = parseFloat(baseP.dataset.targetX) - tabSize; 
-            const baseTargetY = parseFloat(baseP.dataset.targetY) - tabSize;
+            
+            // 10차 패치: 고정된 여백값(pad)을 캔버스 데이터에서 불러와 사용
+            const pad = parseFloat(baseP.dataset.pad);
+            const baseTargetX = parseFloat(baseP.dataset.targetX) - pad; 
+            const baseTargetY = parseFloat(baseP.dataset.targetY) - pad;
 
             const boardRect = gameBoard.getBoundingClientRect();
             const areaRect = gameArea.getBoundingClientRect();
@@ -780,7 +859,6 @@
             const absoluteTargetX = boardOriginX + baseTargetX;
             const absoluteTargetY = boardOriginY + baseTargetY;
 
-            // 1. 보드 스냅 체크
             if (Math.abs(baseCurX - absoluteTargetX) < threshold && Math.abs(baseCurY - absoluteTargetY) < threshold) {
                 const alignDx = absoluteTargetX - baseCurX;
                 const alignDy = absoluteTargetY - baseCurY;
@@ -796,7 +874,6 @@
                 updateProgress(); 
             }
 
-            // 2. 외부 조각 스냅 (그룹 간 결합 체크)
             if (!snappedToBoard) {
                 let merged = false;
 
@@ -806,20 +883,16 @@
                     const aTarX = parseFloat(activeP.dataset.targetX);
                     const aTarY = parseFloat(activeP.dataset.targetY);
                     
-                    // 8차 패치: 현재 드래그 중인 조각의 Grid 좌표 추출
                     const [aGridX, aGridY] = activeP.dataset.id.split('-').map(Number);
 
                     for (let otherP of pieces) {
                         if (otherP.classList.contains('locked') || otherP.dataset.groupId === activeP.dataset.groupId) continue;
 
-                        // 8차 패치: 대상 조각의 Grid 좌표 추출
                         const [oGridX, oGridY] = otherP.dataset.id.split('-').map(Number);
 
-                        // 8차 패치: 오직 "상하좌우로 인접한(Neighbor)" 조각인지 엄격하게 검사
                         const isAdjacent = (Math.abs(aGridX - oGridX) === 1 && aGridY === oGridY) || 
                                            (Math.abs(aGridY - oGridY) === 1 && aGridX === oGridX);
 
-                        // 원래 인접한 조각이 아니라면 거리차를 검사하지 않고 무시
                         if (!isAdjacent) continue;
 
                         const oCurX = parseFloat(otherP.style.left);
